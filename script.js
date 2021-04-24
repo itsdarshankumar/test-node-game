@@ -1,8 +1,10 @@
 let c, cc;
 let width = 400, height = 400;
 
-const K = 5;
-const G = 2;
+const K = 12;
+const G = 4;
+
+let camY;
 
 let circle;
 let orb;
@@ -15,6 +17,7 @@ function setup() {
   let resize = () => {
     c.height = height = window.innerHeight;
     c.width = width = window.innerWidth;
+    camY = height/2;
   };
 
   resize();
@@ -25,8 +28,8 @@ function setup() {
 
   cc = c.getContext("2d");
 
-  circle = new Circle(new Vector(width/2, height/2), 50, 8, 0.01 * Math.PI);
-  orb = new Orb(new Vector(width/2, height*3/4), 10, orbColors.white);
+  circle = new Circle(new Vector(width/2, height/4), 100, 16, 0.01 * Math.PI);
+  orb = new Orb(new Vector(width/2, height*3/4), 10, orbColors.random());
   console.log(orb);
 }
 
@@ -51,14 +54,14 @@ class Quadrant {
     cc.arc(this.pos.x, this.pos.y, this.r + this.dr/2, this.theta, this.theta + Math.PI/2, false);
     cc.arc(this.pos.x, this.pos.y, this.r - this.dr/2, this.theta + Math.PI/2, this.theta, true);
 
-    cc.closePath()
+    cc.closePath();
 
     cc.fillStyle = this.col;
     cc.fill();
   }
 
   rotate(phi) {
-    this.theta += phi;
+    this.theta = (this.theta + phi) % (2*Math.PI);
   }
 }
 
@@ -83,6 +86,20 @@ class Circle {
 
   update() {
     this.rotate();
+  }
+
+  collide(orb) {
+    let r = orb.pos.sub(this.pos);
+    let ang = r.angle();
+    let diff = r.mag() - this.r + this.dr/2;
+    if (diff >= 0 && diff <= this.dr) {
+      for(let quad of this.quads) {
+        if (quad.theta <= ang && quad.theta + Math.PI/2 > ang) {
+          if (orb.col != quad.col) orb.col = orbColors.white;
+          break;
+        }
+      }
+    }
   }
 }
 
@@ -111,6 +128,10 @@ class Orb {
     if (spacebarDown) this.applyImpulse(new Vector(0, -K*0.5));
   }
 
+  camUpdate() {
+    if (this.pos.y < camY) camY = this.pos.y;
+  }
+
   update() {
     this.controls();
     this.gravity();
@@ -118,6 +139,8 @@ class Orb {
     this.vel.incBy(this.acc);
     this.pos.incBy(this.vel);
     this.acc.null();
+
+    this.camUpdate();
   }
 
   applyImpulse(a) {
@@ -134,9 +157,13 @@ function draw() {
 
   circle.update();
   orb.update();
+  circle.collide(orb);
 
+  cc.save();
+  cc.translate(0, height/2-camY);
   circle.draw();
   orb.draw();
+  cc.restore();
 
   requestAnimationFrame(draw);
 }

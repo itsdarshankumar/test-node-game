@@ -45,7 +45,8 @@ class Vector {
 
   angle() {
     let theta = Math.atan(this.y/this.x);
-    if (theta*this.y <= 0) theta += Math.PI;
+    if (theta <= 0) theta += Math.PI;
+    if (this.y <= 0) theta += Math.PI;
     return theta;
   }
 

@@ -10,5 +10,9 @@ const bgColors = {
 }
 
 const orbColors = {
-  white: "#ffffff"
+  white: "#ffffff",
+  random: () => {
+    let arr = Object.values(quadColors);
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
 }
