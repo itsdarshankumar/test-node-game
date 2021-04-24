@@ -8,3 +8,7 @@ const quadColors = {
 const bgColors = {
   dark: "#242424"
 }
+
+const orbColors = {
+  white: "#ffffff"
+}

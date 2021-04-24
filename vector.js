@@ -8,6 +8,11 @@ class Vector {
     return this.x * this.x + this.y * this.y;
   }
 
+  set(v) {
+    this.x = v.x;
+    this.y = v.y;
+  }
+
   mag() {
     return Math.sqrt(this.sqrMag());
   }

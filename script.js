@@ -1,7 +1,13 @@
 let c, cc;
 let width = 400, height = 400;
 
+const K = 5;
+const G = 2;
+
 let circle;
+let orb;
+
+let spacebarDown = false;
 
 function setup() {
   c = document.getElementById("gc");
@@ -15,10 +21,13 @@ function setup() {
 
   window.addEventListener("resize", resize);
   document.addEventListener("keydown", keyDown);
+  document.addEventListener("keyup", keyUp);
 
   cc = c.getContext("2d");
 
   circle = new Circle(new Vector(width/2, height/2), 50, 8, 0.01 * Math.PI);
+  orb = new Orb(new Vector(width/2, height*3/4), 10, orbColors.white);
+  console.log(orb);
 }
 
 
@@ -77,17 +86,67 @@ class Circle {
   }
 }
 
+class Orb {
+  constructor(pos, r, col) {
+    this.pos = pos;
+    this.r = r;
+    this.col = col;
+
+    this.acc = new Vector(0,0);
+    this.vel = new Vector(0,0);
+  }
+
+  draw() {
+    cc.fillStyle = this.col;
+    cc.beginPath();
+    cc.arc(this.pos.x, this.pos.y, this.r, 0, 2*Math.PI);
+    cc.fill();
+  }
+
+  gravity() {
+    this.applyForce(new Vector(0, G*0.1));
+  }
+
+  controls() {
+    if (spacebarDown) this.applyImpulse(new Vector(0, -K*0.5));
+  }
+
+  update() {
+    this.controls();
+    this.gravity();
+
+    this.vel.incBy(this.acc);
+    this.pos.incBy(this.vel);
+    this.acc.null();
+  }
+
+  applyImpulse(a) {
+    this.vel.set(a);
+  }
+
+  applyForce(a) {
+    this.acc.incBy(a);
+  }
+}
+
 function draw() {
   background();
 
   circle.update();
+  orb.update();
+
   circle.draw();
+  orb.draw();
 
   requestAnimationFrame(draw);
 }
 
 function keyDown(evt) {
-  if (evt.keyCode == 32) ;
+  if (evt.keyCode == 32) spacebarDown = true;
+}
+
+function keyUp(evt) {
+  if(evt.keyCode == 32) spacebarDown = false;
 }
 
 
