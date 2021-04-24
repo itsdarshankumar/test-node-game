@@ -4,6 +4,11 @@ let width, height;
 const K = 9;
 const G = 4;
 
+let g;
+
+let frame;
+let gameState;
+
 let camY;
 
 let circle;
@@ -12,23 +17,18 @@ let orb;
 function setup() {
   c = document.getElementById("gc");
 
-  let resize = () => {
-    c.height = height = window.innerHeight;
-    c.width = width = window.innerWidth;
-    camY = height/2;
-  };
+  c.height = height = window.innerHeight;
+  c.width = width = window.innerWidth;
+  camY = height/2;
 
-  resize();
-
-  window.addEventListener("resize", resize);
-  document.addEventListener("keydown", keyDown);
-  document.addEventListener("mousedown", mouseDown);
+  gameState = WAITING_TO_START;
 
   cc = c.getContext("2d");
 
+  g = 0;
+
   circle = new Circle(new Vector(width/2, height/4), 100, 16, 0.01 * Math.PI);
   orb = new Orb(new Vector(width/2, height*3/4), 10, orbColors.random());
-  console.log(orb);
 }
 
 
@@ -93,8 +93,8 @@ class Circle {
     if (diff >= 0 && diff <= this.dr) {
       for(let quad of this.quads) {
         if (quad.theta <= ang && quad.theta + Math.PI/2 > ang) {
-          if (orb.col != quad.col) orb.col = orbColors.white;
-          break;
+          if (orb.col != quad.col) return true;
+          return false;
         }
       }
     }
@@ -119,7 +119,7 @@ class Orb {
   }
 
   gravity() {
-    this.applyForce(new Vector(0, G*0.1));
+    this.applyForce(new Vector(0, g*0.1));
   }
 
   camUpdate() {
@@ -145,34 +145,93 @@ class Orb {
   }
 }
 
-function draw() {
-  background();
-
+function update() {
   circle.update();
   orb.update();
-  circle.collide(orb);
+  if (circle.collide(orb)) {
+    gameOver();
+    return;
+  }
+
+  draw();
+
+  frame = requestAnimationFrame(update);
+}
+
+function draw() {
+  background();
 
   cc.save();
   cc.translate(0, height/2-camY);
   circle.draw();
   orb.draw();
   cc.restore();
-
-  requestAnimationFrame(draw);
 }
 
 function keyDown(evt) {
   if (evt.repeat) return;
-  if (evt.keyCode == 32) orb.applyImpulse(new Vector(0, -K));
+  if (evt.keyCode == 32) { 
+    switch(gameState) {
+      case WAITING_TO_START:
+        gameState = RUNNING;
+        g = G;
+        orb.applyImpulse(new Vector(0, -K));
+        break;
+      case RUNNING:
+        orb.applyImpulse(new Vector(0, -K));
+        break;
+      case WAITING_TO_RESTART:
+        init();
+        break;
+    }
+  }
+    
 }
 
 function mouseDown(evt) {
-  orb.applyImpulse(new Vector(0, -K));
+  switch(gameState) {
+    case WAITING_TO_START:
+      gameState = RUNNING;
+      g = G;
+      orb.applyImpulse(new Vector(0, -K));
+      break;
+    case RUNNING:
+      orb.applyImpulse(new Vector(0, -K));
+      break;
+    case WAITING_TO_RESTART:
+      init();
+      break;
+  }
 }
 
 
-window.onload = function() {
+function stop() {
+  cancelAnimationFrame(frame);
+}
+
+function gameOver() {
+  stop();
+  draw();
+
+  (new Promise(a => setTimeout(a, 1000))).then((a) => {
+    gameState = WAITING_TO_RESTART;
+  });
+
+}
+
+function initListeners() {
+  window.addEventListener("resize", () => {stop(); init();});
+  document.addEventListener("keydown", keyDown);
+  document.addEventListener("mousedown", mouseDown);
+}
+
+function init() {
   setup();
-  requestAnimationFrame(draw);
+  frame = requestAnimationFrame(update);
+}
+
+window.onload = function() {
+  initListeners();
+  init();
 }
 

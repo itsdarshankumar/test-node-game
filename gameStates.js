@@ -1,0 +1,3 @@
+const WAITING_TO_START = 47;
+const RUNNING = 53;
+const WAITING_TO_RESTART = 61;
