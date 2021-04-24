@@ -1,15 +1,13 @@
 let c, cc;
-let width = 400, height = 400;
+let width, height;
 
-const K = 12;
+const K = 9;
 const G = 4;
 
 let camY;
 
 let circle;
 let orb;
-
-let spacebarDown = false;
 
 function setup() {
   c = document.getElementById("gc");
@@ -24,7 +22,7 @@ function setup() {
 
   window.addEventListener("resize", resize);
   document.addEventListener("keydown", keyDown);
-  document.addEventListener("keyup", keyUp);
+  document.addEventListener("mousedown", mouseDown);
 
   cc = c.getContext("2d");
 
@@ -124,16 +122,11 @@ class Orb {
     this.applyForce(new Vector(0, G*0.1));
   }
 
-  controls() {
-    if (spacebarDown) this.applyImpulse(new Vector(0, -K*0.5));
-  }
-
   camUpdate() {
     if (this.pos.y < camY) camY = this.pos.y;
   }
 
   update() {
-    this.controls();
     this.gravity();
 
     this.vel.incBy(this.acc);
@@ -169,13 +162,13 @@ function draw() {
 }
 
 function keyDown(evt) {
-  if (evt.keyCode == 32) spacebarDown = true;
+  if (evt.repeat) return;
+  if (evt.keyCode == 32) orb.applyImpulse(new Vector(0, -K));
 }
 
-function keyUp(evt) {
-  if(evt.keyCode == 32) spacebarDown = false;
+function mouseDown(evt) {
+  orb.applyImpulse(new Vector(0, -K));
 }
-
 
 
 window.onload = function() {
