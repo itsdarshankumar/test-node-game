@@ -11,8 +11,8 @@ let gameState;
 
 let camY;
 
-let circle;
 let orb;
+let circleManager;
 
 function setup() {
   c = document.getElementById("gc");
@@ -27,7 +27,7 @@ function setup() {
 
   g = 0;
 
-  circle = new Circle(new Vector(width/2, height/4), 100, 16, 0.01 * Math.PI);
+  circleManager = new CircleManager(new Circle(new Vector(width/2, height/4), 100, 16, 0.01 * Math.PI));
   orb = new Orb(new Vector(width/2, height*3/4), 10, orbColors.random());
 }
 
@@ -93,12 +93,70 @@ class Circle {
     if (diff >= 0 && diff <= this.dr) {
       for(let quad of this.quads) {
         if (quad.theta <= ang && quad.theta + Math.PI/2 > ang) {
-          if (orb.col != quad.col) return true;
-          return false;
+          if (orb.col != quad.col) return FATAL_COLLISION;
+          return ORDINARY_COLLISION;
         }
       }
     }
+    return NO_COLLISION;
   }
+}
+
+class CircleManager {
+  constructor(initCircle) {
+    this.circles = [initCircle];
+
+    this.next = initCircle;
+    this.makeNext();
+  }
+
+  shouldPurge() {
+    let circle = this.circles[0];
+    let bottom = circle.pos.y - circle.r - circle.dr/2;
+    return bottom > camY + height/2;
+
+  }
+
+  shouldSpawn() {
+    let circle = this.next;
+    let top = circle.pos.y + circle.r + circle.dr/2;
+    return top > camY - height/2;
+  }
+
+  makeNext() {
+    let curr = this.next;
+    let distConsc = height*3/4;
+    this.next = new Circle(curr.pos.add(new Vector(0, -distConsc)), curr.r, curr.dr, curr.omega);
+  }
+
+  update() {
+    if (this.shouldPurge()) this.circles.shift();
+    if (this.shouldSpawn()) {
+      this.circles.push(this.next);
+      this.makeNext();
+    }
+
+    this.circles.forEach(circle => circle.update());
+
+  }
+
+  draw() {
+    this.circles.forEach(circle => circle.draw());
+  }
+
+  checkCollision(orb) {
+    for(let circle of this.circles) {
+      let collision = circle.collide(orb);;
+      if (collision == FATAL_COLLISION) {
+        gameState = GAME_OVER;
+        return;
+      }
+      else if (collision == ORDINARY_COLLISION) {
+        break;
+      }
+    }
+  }
+
 }
 
 class Orb {
@@ -126,6 +184,10 @@ class Orb {
     if (this.pos.y < camY) camY = this.pos.y;
   }
 
+  checkOutOfBounds() {
+    if (this.pos.y > camY + height/2) gameState = GAME_OVER;
+  }
+
   update() {
     this.gravity();
 
@@ -146,9 +208,13 @@ class Orb {
 }
 
 function update() {
-  circle.update();
   orb.update();
-  if (circle.collide(orb)) {
+  circleManager.update();
+
+  orb.checkOutOfBounds();
+  circleManager.checkCollision(orb);
+
+  if (gameState == GAME_OVER) {
     gameOver();
     return;
   }
@@ -163,7 +229,7 @@ function draw() {
 
   cc.save();
   cc.translate(0, height/2-camY);
-  circle.draw();
+  circleManager.draw();
   orb.draw();
   cc.restore();
 }

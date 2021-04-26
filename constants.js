@@ -1,0 +1,8 @@
+const WAITING_TO_START = 47;
+const RUNNING = 53;
+const GAME_OVER = 59;
+const WAITING_TO_RESTART = 61;
+
+const NO_COLLISION = 67;
+const ORDINARY_COLLISION = 71;
+const FATAL_COLLISION = 73;
