@@ -10,9 +10,11 @@ const bgColors = {
 }
 
 const orbColors = {
-  white: "#ffffff",
+  light: "#ffffff",
   random: () => {
     let arr = Object.values(quadColors);
     return arr[Math.floor(Math.random() * arr.length)];
   }
 }
+
+const checkpointColor = "#484848";

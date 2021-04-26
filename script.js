@@ -14,6 +14,8 @@ let camY;
 let orb;
 let circleManager;
 
+let score;
+
 function setup() {
   c = document.getElementById("gc");
 
@@ -22,6 +24,7 @@ function setup() {
   camY = height/2;
 
   gameState = WAITING_TO_START;
+  score = 0;
 
   cc = c.getContext("2d");
 
@@ -102,9 +105,19 @@ class Circle {
   }
 }
 
+class Checkpoint {
+  static draw(y, r, col) {
+    cc.fillStyle = col;
+    cc.beginPath();
+    cc.arc(width/2, y, r, 0, 2*Math.PI);
+    cc.fill();
+  }
+}
+
 class CircleManager {
   constructor(initCircle) {
     this.circles = [initCircle];
+    this.checkpoints = [];
 
     this.next = initCircle;
     this.makeNext();
@@ -127,6 +140,7 @@ class CircleManager {
     let curr = this.next;
     let distConsc = height*3/4;
     this.next = new Circle(curr.pos.add(new Vector(0, -distConsc)), curr.r, curr.dr, curr.omega);
+    this.checkpoints.push(curr.pos.y - distConsc/2);
   }
 
   update() {
@@ -142,6 +156,17 @@ class CircleManager {
 
   draw() {
     this.circles.forEach(circle => circle.draw());
+    this.checkpoints.forEach(
+      checkpoint => Checkpoint.draw(checkpoint, 10, checkpointColor)
+    );
+  }
+
+  handleCheckpoints(orb) {
+    if (orb.pos.y <= this.checkpoints[0]) {
+      score += 1;
+      orb.randomizeCol();
+      this.checkpoints.shift();
+    }
   }
 
   checkCollision(orb) {
@@ -198,6 +223,10 @@ class Orb {
     this.camUpdate();
   }
 
+  randomizeCol() {
+    this.col = orbColors.random();
+  }
+
   applyImpulse(a) {
     this.vel.set(a);
   }
@@ -219,7 +248,10 @@ function update() {
     return;
   }
 
+  circleManager.handleCheckpoints(orb);
+
   draw();
+  hud();
 
   frame = requestAnimationFrame(update);
 }
@@ -232,6 +264,16 @@ function draw() {
   circleManager.draw();
   orb.draw();
   cc.restore();
+}
+
+function hud() {
+  let offset = 20;
+
+  cc.font = "4rem 'Space Grotesk'";
+  cc.textBaseline = "top";
+  cc.textAlign = "end";
+  cc.fillStyle = "#ffffff";
+  cc.fillText(score, width - offset, offset)
 }
 
 function keyDown(evt) {
