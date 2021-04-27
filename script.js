@@ -35,8 +35,8 @@ function setup() {
 }
 
 
-function background() {
-  cc.fillStyle = bgColors.dark;
+function background(col) {
+  cc.fillStyle = col;
   cc.fillRect(0, 0, width, height);
 }
 
@@ -257,7 +257,7 @@ function update() {
 }
 
 function draw() {
-  background();
+  background(bgColors.dark);
 
   cc.save();
   cc.translate(0, height/2-camY);
@@ -321,8 +321,22 @@ function gameOver() {
   stop();
   draw();
 
-  (new Promise(a => setTimeout(a, 1000))).then((a) => {
+  (new Promise(a => setTimeout(a, 100))).then((a) => {
+    background(bgColors.overlay);
+
+    cc.font = "7rem 'Space Grotesk'";
+    cc.textBaseline = "middle";
+    cc.textAlign = "center";
+    cc.fillStyle = "#ffffff";
+
+    let offset = 40;
+    cc.fillText("Game Over!", width/2, height/2 - offset);
+
+    cc.font = "2rem 'Space Grotesk'";
+    cc.fillText("Press space to restart", width/2, height/2 + offset);
+
     gameState = WAITING_TO_RESTART;
+
   });
 
 }

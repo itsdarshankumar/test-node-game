@@ -6,7 +6,8 @@ const quadColors = {
 }
 
 const bgColors = {
-  dark: "#242424"
+  dark: "#242424",
+  overlay: "#15151580"
 }
 
 const orbColors = {
