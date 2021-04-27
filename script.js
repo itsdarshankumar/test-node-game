@@ -16,6 +16,8 @@ let circleManager;
 
 let score;
 
+let notFirstTime = false;
+
 function setup() {
   c = document.getElementById("gc");
 
@@ -25,6 +27,9 @@ function setup() {
 
   gameState = WAITING_TO_START;
   score = 0;
+
+  if (sessionStorage.getItem("notFirstTime")) notFirstTime = true;
+  else sessionStorage.setItem("notFirstTime", true);
 
   cc = c.getContext("2d");
 
@@ -272,8 +277,23 @@ function hud() {
   cc.font = "4rem 'Space Grotesk'";
   cc.textBaseline = "top";
   cc.textAlign = "end";
-  cc.fillStyle = "#ffffff";
-  cc.fillText(score, width - offset, offset)
+  cc.fillStyle = txtColor.light;
+  cc.fillText(score, width - offset, offset);
+
+  if (!notFirstTime && gameState == WAITING_TO_START) {
+    background(bgColors.overlay);
+
+    cc.textBaseline = "middle";
+    cc.textAlign = "center";
+    cc.fillStyle = txtColor.light;
+
+    cc.font = `${Math.max(width/10, 56)}px 'Space Grotesk'`;
+    cc.fillText("Color Switch", width/2, height/4);
+
+    cc.font = `${Math.max(width/32, 24)}px 'Space Grotesk'`;
+    cc.fillText("Press space to play", width/2, height*7/8);
+  }
+
 }
 
 function keyDown(evt) {
@@ -321,21 +341,23 @@ function gameOver() {
   stop();
   draw();
 
-  (new Promise(a => setTimeout(a, 100))).then((a) => {
+  (new Promise(a => setTimeout(a, 100))).then(a => {
     background(bgColors.overlay);
 
-    cc.font = "7rem 'Space Grotesk'";
+    cc.font = `${Math.max(width/10, 56)}px 'Space Grotesk'`;
     cc.textBaseline = "middle";
     cc.textAlign = "center";
-    cc.fillStyle = "#ffffff";
+    cc.fillStyle = txtColor.light;
 
-    let offset = 40;
+    let offset = width/25;
     cc.fillText("Game Over!", width/2, height/2 - offset);
 
-    cc.font = "2rem 'Space Grotesk'";
+    cc.font = `${Math.max(width/32, 24)}px 'Space Grotesk'`;
     cc.fillText("Press space to restart", width/2, height/2 + offset);
 
-    gameState = WAITING_TO_RESTART;
+    (new Promise(b => setTimeout(b, 100))).then(b => {
+      gameState = WAITING_TO_RESTART;
+    });
 
   });
 
