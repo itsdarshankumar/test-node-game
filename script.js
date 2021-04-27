@@ -17,6 +17,7 @@ let circleManager;
 let score;
 
 let notFirstTime = false;
+let allTimeBest;
 
 function setup() {
   c = document.getElementById("gc");
@@ -30,6 +31,9 @@ function setup() {
 
   if (sessionStorage.getItem("notFirstTime")) notFirstTime = true;
   else sessionStorage.setItem("notFirstTime", true);
+
+  if (localStorage.getItem("allTimeBest")) allTimeBest = Number.parseInt(localStorage.getItem("allTimeBest"));
+  else allTimeBest = 0;
 
   cc = c.getContext("2d");
 
@@ -349,11 +353,30 @@ function gameOver() {
     cc.textAlign = "center";
     cc.fillStyle = txtColor.light;
 
-    let offset = width/25;
-    cc.fillText("Game Over!", width/2, height/2 - offset);
+    let midOffset = Math.max(width/25, 20);
+    cc.fillText("Game Over!", width/2, height/2 - midOffset);
 
+    let scoreOffset = 20;
+    if (score > allTimeBest) {
+      allTimeBest = score;
+      localStorage.setItem("allTimeBest", score);
+
+      cc.textBaseline = "top";
+      cc.textAlign = "end";
+      cc.font = `${Math.max(width/32, 24)}px 'Space Grotesk'`;
+      cc.fillText(`New Highscore ${score}!`, width - scoreOffset, scoreOffset);
+    }
+    else {
+      cc.textBaseline = "top";
+      cc.textAlign = "end";
+      cc.font = `${Math.max(width/32, 24)}px 'Space Grotesk'`;
+      cc.fillText(`HI ${allTimeBest} | ${score}`, width - scoreOffset, scoreOffset);
+    }
+
+    cc.textBaseline = "middle";
+    cc.textAlign = "center";
     cc.font = `${Math.max(width/32, 24)}px 'Space Grotesk'`;
-    cc.fillText("Press space to restart", width/2, height/2 + offset);
+    cc.fillText("Press space to restart", width/2, height/2 + midOffset);
 
     (new Promise(b => setTimeout(b, 100))).then(b => {
       gameState = WAITING_TO_RESTART;
