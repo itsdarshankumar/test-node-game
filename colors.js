@@ -1,9 +1,13 @@
-const quadColors = {
-  cyan: "#35e2f2",
-  magenta: "#8c13fb",
-  pink: "#ff0080",
-  yellow: "#f6df0e"
-}
+let colorApi = "https://www.thecolorapi.com/scheme?";
+
+let quadColors;
+
+const origQuadColors = [
+  "#35e2f2",
+  "#8c13fb",
+  "#ff0080",
+  "#f6df0e"
+];
 
 const bgColors = {
   dark: "#242424",
@@ -15,12 +19,26 @@ const txtColor = {
 }
 
 const orbColors = {
-  light: "#ffffff",
   random: (excp) => {
-    let arr = Object.values(quadColors);
+    let arr = [...quadColors];
     if (excp) arr.splice(arr.indexOf(excp), 1);
     return arr[Math.floor(Math.random() * arr.length)];
   }
 }
 
 const checkpointColor = "#484848";
+
+let colorPool = ['#C62828', '#F9A825', '#FF8F00', '#EF6C00'];
+
+async function initColors() {
+  let randomCol = colorPool[Math.floor(Math.random() * colorPool.length)].substring(1);
+  let queryUrl = `${colorApi}hex=${randomCol}&count=4&mode=quad`;
+
+  let res = await fetch(queryUrl);
+  let colorData = await res.json();
+
+  quadColors = Math.random() > .8 ? origQuadColors : colorData.colors.map(el => el.hex.value);
+}
+
+
+
