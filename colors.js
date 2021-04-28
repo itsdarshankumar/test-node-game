@@ -16,8 +16,9 @@ const txtColor = {
 
 const orbColors = {
   light: "#ffffff",
-  random: () => {
+  random: (excp) => {
     let arr = Object.values(quadColors);
+    if (excp) arr.splice(arr.indexOf(excp), 1);
     return arr[Math.floor(Math.random() * arr.length)];
   }
 }

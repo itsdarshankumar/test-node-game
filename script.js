@@ -233,7 +233,7 @@ class Orb {
   }
 
   randomizeCol() {
-    this.col = orbColors.random();
+    this.col = orbColors.random(this.col);
   }
 
   applyImpulse(a) {
