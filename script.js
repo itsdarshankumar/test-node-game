@@ -82,7 +82,7 @@ class Circle {
     this.dr = dr;
     this.omega = omega;
 
-    let cols = Object.values(quadColors).sort(() => (Math.random() > .5) ? 1 : -1);
+    let cols = [...quadColors].sort(() => (Math.random() > .5) ? 1 : -1);
     this.quads = cols.map((col,i) => new Quadrant(pos, r, dr, i*Math.PI/2, col));
   }
 
@@ -233,7 +233,7 @@ class Orb {
   }
 
   randomizeCol() {
-    this.col = orbColors.random();
+    this.col = orbColors.random(this.col);
   }
 
   applyImpulse(a) {
@@ -397,8 +397,10 @@ function init() {
   frame = requestAnimationFrame(update);
 }
 
-window.onload = function() {
+window.onload = async function() {
   initListeners();
+  await initColors();
+  console.log("called it");
   init();
 }
 
