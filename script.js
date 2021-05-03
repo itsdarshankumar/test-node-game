@@ -1,3 +1,5 @@
+let isMobile = false;
+
 let c, cc;
 let width, height;
 
@@ -292,10 +294,13 @@ function hud() {
     cc.fillStyle = txtColor.light;
 
     cc.font = `${Math.max(width/10, 56)}px 'Space Grotesk'`;
-    cc.fillText("Color Switch", width/2, height/4);
+
+    let midOffset = Math.max(width/25, 20);
+    cc.fillText("Color Switch", width/2, height/2 - midOffset);
 
     cc.font = `${Math.max(width/32, 24)}px 'Space Grotesk'`;
-    cc.fillText("Press space to play", width/2, height*7/8);
+    let instructionTxt = isMobile ? "Tap to play" : "Press space to play";
+    cc.fillText(instructionTxt, width/2, height/2 + midOffset);
   }
 
 }
@@ -336,6 +341,21 @@ function mouseDown(evt) {
   }
 }
 
+function touchStart(evt) {
+  switch(gameState) {
+    case WAITING_TO_START:
+      gameState = RUNNING;
+      g = G;
+      orb.applyImpulse(new Vector(0, -K));
+      break;
+    case RUNNING:
+      orb.applyImpulse(new Vector(0, -K));
+      break;
+    case WAITING_TO_RESTART:
+      init();
+      break;
+  }
+}
 
 function stop() {
   cancelAnimationFrame(frame);
@@ -376,7 +396,8 @@ function gameOver() {
     cc.textBaseline = "middle";
     cc.textAlign = "center";
     cc.font = `${Math.max(width/32, 24)}px 'Space Grotesk'`;
-    cc.fillText("Press space to restart", width/2, height/2 + midOffset);
+    let instructionTxt = isMobile ? "Tap to restart" : "Press space to restart";
+    cc.fillText(instructionTxt, width/2, height/2 + midOffset);
 
     (new Promise(b => setTimeout(b, 100))).then(b => {
       gameState = WAITING_TO_RESTART;
@@ -386,10 +407,19 @@ function gameOver() {
 
 }
 
+function checkIfMobile() {
+  if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    isMobile = true;
+  }
+}
+
 function initListeners() {
   window.addEventListener("resize", () => {stop(); init();});
-  document.addEventListener("keydown", keyDown);
-  document.addEventListener("mousedown", mouseDown);
+  if (isMobile) document.addEventListener("touchstart", touchStart);
+  else {
+    document.addEventListener("keydown", keyDown);
+    document.addEventListener("mousedown", mouseDown);
+  }
 }
 
 function init() {
@@ -398,6 +428,7 @@ function init() {
 }
 
 window.onload = async function() {
+  checkIfMobile();
   initListeners();
   await initColors();
   init();
