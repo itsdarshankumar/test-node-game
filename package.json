@@ -1,0 +1,24 @@
+{
+  "name": "color-switch",
+  "version": "1.0.0",
+  "description": "> Color Switch game implemented in vanilla js!",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/techiepriyansh/color-switch-js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/techiepriyansh/color-switch-js/issues"
+  },
+  "homepage": "https://github.com/techiepriyansh/color-switch-js#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^2.0.22"
+  }
+}
